@@ -1,4 +1,4 @@
-// vars/pipelineConditionals.groovy
+// vars/pipelineConditional.groovy
 def call(String filename) {
   def changeLogSets = currentBuild.rawBuild.changeSets
 
