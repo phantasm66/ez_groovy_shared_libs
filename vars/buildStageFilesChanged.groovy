@@ -1,9 +1,6 @@
-def call() {
+def call(String imageTag) {
     def buildStageFilesChanged = false
-
-    /* Git SHA commit id (for tagging) */
-    sh 'git rev-parse HEAD > GIT_COMMIT'
-    imageTag = readFile('GIT_COMMIT').take(10)
+    def localFiles = ['Dockerfile', 'Jenkinsfile', 'docker-entrypoint.sh']
 
     /* Filenames changed in commit - (ref: buildStageFilesChanged) */
     sh "git diff-tree --no-commit-id --name-only -r ${imageTag} > CHANGE_SET"
