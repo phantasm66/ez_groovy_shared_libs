@@ -1,5 +1,5 @@
 def call(String imageTag) {
-    def buildStageFilesChanged = false
+    /* def buildStageFilesChanged = false */
     def localFiles = ['Dockerfile', 'Jenkinsfile', 'docker-entrypoint.sh']
 
     /* Filenames changed in commit - (ref: buildStageFilesChanged) */
@@ -12,8 +12,10 @@ def call(String imageTag) {
     /* Set buildStageFilesChanged */
     localFiles.each { localFile ->
         if (changeSet.contains(localFile)) {
-            buildStageFilesChanged = true
-            echo("Build related file has changed: ${localFile} - running all image builder steps")
+            return true
+            /* buildStageFilesChanged = true */
+            /* echo("Build related file has changed: ${localFile} - running all image builder steps") */
         }
     }
+    return false
 }
