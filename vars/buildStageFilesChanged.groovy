@@ -1,4 +1,6 @@
 def call() {
+    def buildStageFilesChanged = false
+
     /* Git SHA commit id (for tagging) */
     sh 'git rev-parse HEAD > GIT_COMMIT'
     imageTag = readFile('GIT_COMMIT').take(10)
