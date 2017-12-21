@@ -34,8 +34,16 @@ class EzBuildHelpers implements Serializable {
         return results
     }
 
+
+
+
+
+
     def buildDockerImage(String appName, String dockerHubUser, String dockerHubPass) {
-        String gitCommitId = this.commitId()
+        steps.sh "git rev-parse HEAD > GIT_COMMIT"
+
+
+
 
         if (this.specificRepoFilesChanged(gitCommitId)) {
             steps.echo "Building docker image and tagging it: phantasm66/${appName}:${gitCommitId}"
