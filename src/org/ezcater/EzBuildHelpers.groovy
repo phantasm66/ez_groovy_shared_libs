@@ -37,7 +37,7 @@ class EzBuildHelpers implements Serializable {
     }
 
     def buildDockerImage(String appName, String dockerHubUser, String dockerHubPass) {
-        if (this.specificRepoFilesChanged) {
+        if (this.specificRepoFilesChanged()) {
             /* NOTE: will need to change docker hub account from phantasm66 to ezcater eventually */
 
             steps.echo "Building docker image and tagging it: phantasm66/${appName}:${this.commitId}"
