@@ -6,7 +6,7 @@ class EzBuildHelpers implements Serializable {
     EzBuildHelpers(steps) {this.steps = steps}
 
     def commitId() {
-        def gitCommitIdFile = new File('GIT_COMMIT')
+        def gitCommitIdFile = 'GIT_COMMIT'
 
         /* check if we've done this already */
         if (!gitCommitIdFile.exists()) {
@@ -19,10 +19,10 @@ class EzBuildHelpers implements Serializable {
 
     def specificRepoFilesChanged() {
         def results = false
-        def gitChangeSetFile = new File('CHANGE_SET')
+        def gitChangeSetFile = 'CHANGE_SET'
         def localFiles = ['Dockerfile', 'Jenkinsfile', 'docker-entrypoint.sh', 'docker-compose.test.yml']
 
-        steps.sh "git diff-tree --no-commit-id --name-only -r ${this.commitId()} > CHANGE_SET"
+        steps.sh "git diff-tree --no-commit-id --name-only -r ${this.commitId()} > ${gitChangeSetFile}"
         def changeSet = gitChangeSetFile.text.tokenize()
 
         new File('tests').eachFileRecurse(FILES) { foundFile ->
