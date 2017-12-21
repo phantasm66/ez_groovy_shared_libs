@@ -1,31 +1,35 @@
 package org.ezcater
+import static groovy.io.FileType.FILES
 
 class EzBuildHelpers implements Serializable {
     def steps
     EzBuildHelpers(steps) {this.steps = steps}
 
     def commitId() {
-        def gitCommitIdFile = 'GIT_COMMIT'
-        def gitCommitId
+        def gitCommitIdFile = new File('GIT_COMMIT')
 
         /* check if we've done this already */
-        if (!fileExists(gitCommitIdFile)) {
+        if (!gitCommitIdFile.exists()) {
             steps.sh "git rev-parse HEAD > ${gitCommitIdFile}"
         }
 
-        gitCommitId = readFile(gitCommitIdFile).take(10)
+        def gitCommitId = gitCommitIdFile.text.take(10)
         return gitCommitId
     }
 
     def specificRepoFilesChanged() {
         def results = false
+        def gitChangeSetFile = new File('CHANGE_SET')
         def localFiles = ['Dockerfile', 'Jenkinsfile', 'docker-entrypoint.sh', 'docker-compose.test.yml']
 
         steps.sh "git diff-tree --no-commit-id --name-only -r ${this.commitId()} > CHANGE_SET"
-        def changeSet = readFile('CHANGE_SET').tokenize()
+        def changeSet = gitChangeSetFile.text.tokenize()
 
-        def testFiles = findFiles(glob: '**/**/*.rb')
-        testFiles.each { testFile -> localFiles.add("tests/${testFile.name}") }
+        new File('tests').eachFileRecurse(FILES) { foundFile ->
+            if (foundFile.name.endsWith('.rb')) {
+                localFiles.add(foundFile.getPath())
+            }
+        }
 
         localFiles.each { localFile ->
             if (changeSet.contains(localFile)) {
