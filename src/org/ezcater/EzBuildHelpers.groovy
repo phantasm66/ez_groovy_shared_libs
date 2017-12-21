@@ -19,7 +19,7 @@ class EzBuildHelpers implements Serializable {
         def localFiles = ['Dockerfile', 'Jenkinsfile', 'docker-entrypoint.sh', 'docker-compose.test.yml']
         def changeSet = "git diff-tree --no-commit-id --name-only -r ${gitCommitId}".execute().text.tokenize()
 
-        new File('tests').eachFileRecurse(FILES) { foundFile ->
+        new File('./tests').eachFileRecurse(FILES) { foundFile ->
             if (foundFile.name.endsWith('.rb')) {
                 localFiles.add(foundFile.getPath())
             }
