@@ -17,11 +17,11 @@ class EzBuildHelpers implements Serializable {
         return gitCommitId
     }
 
-    def specificRepoFilesChanged(String gitCommitId) {
+    def specificRepoFilesChanged() {
         def results = false
         def localFiles = ['Dockerfile', 'Jenkinsfile', 'docker-entrypoint.sh', 'docker-compose.test.yml']
 
-        steps.sh "git diff-tree --no-commit-id --name-only -r ${gitCommitId} > CHANGE_SET"
+        steps.sh "git diff-tree --no-commit-id --name-only -r ${this.commitId} > CHANGE_SET"
         def changeSet = readFile('CHANGE_SET').tokenize()
 
         def testFiles = findFiles(glob: '**/**/*.rb')
@@ -37,14 +37,14 @@ class EzBuildHelpers implements Serializable {
     }
 
     def buildDockerImage(String appName, String dockerHubUser, String dockerHubPass) {
-        if (specificRepoFilesChanged(commitId)) {
+        if (this.specificRepoFilesChanged) {
             /* NOTE: will need to change docker hub account from phantasm66 to ezcater eventually */
 
-            steps.echo "Building docker image and tagging it: phantasm66/${appName}:${commitId}"
-            steps.sh "/usr/bin/docker build -t phantasm66/${appName}:${commitId} ."
+            steps.echo "Building docker image and tagging it: phantasm66/${appName}:${this.commitId}"
+            steps.sh "/usr/bin/docker build -t phantasm66/${appName}:${this.commitId} ."
 
             /* set $IMAGE_TAG env var so we use this brand new image */
-            steps.sh "export IMAGE_TAG=phantasm66/${appName}:${commitId}"
+            steps.sh "export IMAGE_TAG=phantasm66/${appName}:${this.commitId}"
             steps.sh "/usr/bin/docker-compose -f docker-compose.tests.yml config"
 
             steps.echo "Launching app locally from docker-compose.test.yml"
@@ -58,7 +58,7 @@ class EzBuildHelpers implements Serializable {
 
             steps.echo "Authenticating w/ docker registry and pushing new image"
             steps.sh "/usr/bin/docker login -u ${dockerHubUser} -p ${dockerHubPass}"
-            steps.sh "/usr/bin/docker push phantasm66/${appName}:${commitId}"
+            steps.sh "/usr/bin/docker push phantasm66/${appName}:${this.commitId}"
         } else {
             steps.echo "No build related files have changed... skipping image build stage"
         }
