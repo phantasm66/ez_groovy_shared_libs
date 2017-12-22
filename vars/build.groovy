@@ -36,9 +36,6 @@ def call(String appName) {
           def testFiles = findFiles(glob: '**/**/*.rb')
           testFiles.each { testFile -> localFiles.add("tests/${testFile.name}") }
 
-          echo(changeSet.toString())
-          echo(localFiles.toString())
-
           for (String localFile: localFiles) {
             if (changeSet.contains(localFile)) {
               echo("Build related file has changed: ${localFile} - running all image builder steps")
