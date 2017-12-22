@@ -114,7 +114,7 @@ def call() {
                 echo("Launching app and all dependencies locally using ${dockerComposeFile}")
                 sh("/usr/bin/docker-compose -f ${dockerComposeFile} up -d")
                 echo("Letting things percolate for a few before kicking off our tests")
-                sleep(300)
+                sleep(30)
 
                 echo("Running tests against the locally spawned app container set")
                 /* NEED TO RESEARCH THE LOGISTICS OF *HOW* TO RUN THE RSPEC/ETC TESTS AGAINST THIS APP LOCALLY */
