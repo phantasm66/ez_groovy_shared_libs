@@ -48,6 +48,10 @@ def call() {
               sh("export IMAGE_TAG=phantasm66/${appName}:${commitId}")
               sh("/usr/bin/docker-compose -f docker-compose.tests.yml config")
 
+              /* DEBUGGING */
+              sh("cat docker-compose.tests.yml")
+
+
               echo("Launching app and all dependencies locally using docker-compose.test.yml")
               sh("/usr/bin/docker-compose -f docker-compose.tests.yml up -d")
               echo("Letting things percolate for a few before kicking off our tests")
