@@ -35,13 +35,9 @@ def call() {
 
         stage('build') {
           def testFiles = findFiles(glob: '**/**/*.rb')
-
-          /* TEST THIS EACH LOOP WITH MULTIPLE TEST RB FILES */
-          testFiles.each { testFile -> localFiles.add("tests/${testFile.name}") }
+          testFiles.each { testFile -> localFiles.add(testFile.path) }
 
           echo(localFiles.toString())
-
-
 
 
           /* NEED A MORE RELIABLE WAY TO LOOP HERE */
