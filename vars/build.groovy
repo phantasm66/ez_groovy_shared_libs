@@ -12,9 +12,10 @@ def call() {
                        passwordVariable: 'dockerHubPass']]) {
 
       container('jnlp') {
-        def commitId
         def changeSet
         def appName = env.JOB_NAME
+
+        String commitId
 
         def localFiles = [
           'Dockerfile',
@@ -34,6 +35,8 @@ def call() {
         }
 
         stage('build') {
+          String imageTag = "phantasm66/${appName}:${commitId}"
+
           def testFiles = findFiles(glob: '**/**/*.rb')
           testFiles.each { testFile -> localFiles.add(testFile.path) }
 
@@ -41,16 +44,12 @@ def call() {
             if (changeSet.contains(localFile)) {
               echo("Build related file has changed: ${localFile} - running all image builder steps")
 
-              echo("Building docker image and tagging it: phantasm66/${appName}:${commitId}")
-              sh("/usr/bin/docker build -t phantasm66/${appName}:${commitId} .")
+              echo("Building docker image and tagging it: ${imageTag}")
+              sh("/usr/bin/docker build -t ${imageTag} .")
 
-              echo("Setting IMAGE_TAG env var for docker-compose")
-              sh("export IMAGE_TAG=phantasm66/${appName}:${commitId}")
+              echo("Setting IMAGE_TAG .env file var for docker-compose file interpolation")
+              sh("echo 'IMAGE_TAG=${imageTag}' > .env")
               sh("/usr/bin/docker-compose -f docker-compose.tests.yml config")
-
-              /* DEBUGGING */
-              sh("cat docker-compose.tests.yml")
-
 
               echo("Launching app and all dependencies locally using docker-compose.test.yml")
               sh("/usr/bin/docker-compose -f docker-compose.tests.yml up -d")
