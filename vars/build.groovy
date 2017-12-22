@@ -37,10 +37,6 @@ def call() {
           def testFiles = findFiles(glob: '**/**/*.rb')
           testFiles.each { testFile -> localFiles.add(testFile.path) }
 
-          echo(localFiles.toString())
-
-
-          /* NEED A MORE RELIABLE WAY TO LOOP HERE */
           for (String localFile: localFiles) {
             if (changeSet.contains(localFile)) {
               echo("Build related file has changed: ${localFile} - running all image builder steps")
@@ -48,7 +44,7 @@ def call() {
               echo("Building docker image and tagging it: phantasm66/${appName}:${commitId}")
               sh("/usr/bin/docker build -t phantasm66/${appName}:${commitId} .")
 
-              echo("Setting $IMAGE_TAG env var for docker-compose")
+              echo("Setting IMAGE_TAG env var for docker-compose")
               sh("export IMAGE_TAG=phantasm66/${appName}:${commitId}")
               sh("/usr/bin/docker-compose -f docker-compose.tests.yml config")
 
@@ -66,6 +62,9 @@ def call() {
               echo("Authenticating w/ private docker registry and pushing phantasm66/${appName}:${commitId}")
               sh("/usr/bin/docker login -u ${dockerHubUser} -p ${dockerHubPass}")
               sh("/usr/bin/docker push phantasm66/${appName}:${commitId}")
+
+              /* we only need to do this once (eg: if mutliple files changed) */
+              break
             }
           }
         }
