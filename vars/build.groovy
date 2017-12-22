@@ -1,13 +1,44 @@
 def call() {
+  def orgName = 'phantasm66' /* change to 'ezcater' eventually */
 
   /*
-    load this library implicitly
+    LOAD THIS LIBRARY IMPLICITLY!
+    *****************************
+    This entire library is a pipeline for building, testing and deploying apps as
+    containers in a kubernetes cluster (a few configuration lines in the Jenkins UI).
+    This library must exist in a git repo under a main "vars/" directory. It will
+    become available to all Jenkinsfile jobs once configured under:
+
+        Manage Jenkins => Global Pipeline Libraries...
+
+    An app's Jenkinsfile need only call the following to run this pipeline:
+
+        build()
+
+    Everything specific to the app being built will be set dynamically.
+
+    All configuration of the build slave (docker image to use, kube namespace to
+    launch the build slave containers in, k8s build slave pod instance and resource
+    limits, etc..) can be made below in the podTemplate or containerTemplate blocks
+    (ref: https://jenkins.io/doc/pipeline/steps/kubernetes/)
+
+    Plugins you will need to install on the Jenkins master:
+    *******************************************************
+      - kubernetes
+          ~dynamically provisions Jenkins build slaves in a k8s cluster
+
+      - workflow-aggregator
+          ~the "pipeline" plugin
+
+      - github-branch-source
+          ~scans an org's github repos and creates jobs from all discovered Jenkinsfiles
+          ~jobs are named after the app's git repo
   */
 
   podTemplate(
     name: 'jnlp',
     label: 'build-pod',
-    namespace: 'sandbox', /* change this to default or whatever we end up using */
+    namespace: 'sandbox', /* change to whatever kube namespace we end up using (maybe 'jenkins'?) */
     instanceCap: 5,
     idleMinutes: 5,
     nodeUsageMode: 'EXCLUSIVE',
@@ -15,7 +46,7 @@ def call() {
     containers: [
       containerTemplate(
         name: 'jnlp',
-        image: 'phantasm66/ez_jnlp_slave',
+        image: "${orgName}/ez_jnlp_slave",
         alwaysPullImage: true,
         workingDir: '/home/jenkins',
         ttyEnabled: true
@@ -50,7 +81,7 @@ def call() {
           ]
 
           stage('clone') {
-            git(url: "https://github.com/phantasm66/${appName}.git")
+            git(url: "https://github.com/${orgName}/${appName}.git")
 
             sh("git rev-parse HEAD > GIT_COMMIT")
             commitId = readFile('GIT_COMMIT').take(10)
@@ -60,7 +91,7 @@ def call() {
           }
 
           stage('build') {
-            String imageTag = "phantasm66/${appName}:${commitId}"
+            String imageTag = "${orgName}/${appName}:${commitId}"
 
             def testFiles = findFiles(glob: '**/**/*.rb')
             testFiles.each { testFile -> localFiles.add(testFile.path) }
@@ -87,9 +118,9 @@ def call() {
                 echo("Bringing down locally spawned app container set")
                 sh("/usr/bin/docker-compose -f docker-compose.tests.yml down")
 
-                echo("Authenticating w/ private docker registry and pushing phantasm66/${appName}:${commitId}")
+                echo("Authenticating w/ private docker registry and pushing ${orgName}/${appName}:${commitId}")
                 sh("/usr/bin/docker login -u ${dockerHubUser} -p ${dockerHubPass}")
-                sh("/usr/bin/docker push phantasm66/${appName}:${commitId}")
+                sh("/usr/bin/docker push ${orgName}/${appName}:${commitId}")
 
                 /* we only need to do this once (eg: if mutliple files changed) */
                 break
@@ -98,7 +129,7 @@ def call() {
           }
 
           stage('deploy') {
-            echo("Deploying phantasm66/${appName}:${commitId} to production Kubernetes")
+            echo("Deploying ${orgName}/${appName}:${commitId} to production Kubernetes")
             /* add ezdeploy prepare and deploy steps here */
           }
         }
