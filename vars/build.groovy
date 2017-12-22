@@ -108,10 +108,10 @@ def call() {
 
                 echo("Setting IMAGE_TAG .env file var for docker-compose file interpolation")
                 sh("echo 'IMAGE_TAG=${imageTag}' > .env")
-                sh("/usr/bin/docker-compose -f docker-compose.tests.yml config")
+                sh("/usr/bin/docker-compose -f docker-compose.test.yml config")
 
                 echo("Launching app and all dependencies locally using docker-compose.test.yml")
-                sh("/usr/bin/docker-compose -f docker-compose.tests.yml up -d")
+                sh("/usr/bin/docker-compose -f docker-compose.test.yml up -d")
                 echo("Letting things percolate for a few before kicking off our tests")
                 sleep(30)
 
@@ -119,7 +119,7 @@ def call() {
                 /* NEED TO RESEARCH THE LOGISTICS OF *HOW* TO RUN THE RSPEC/ETC TESTS AGAINST THIS APP LOCALLY */
 
                 echo("Bringing down locally spawned app container set")
-                sh("/usr/bin/docker-compose -f docker-compose.tests.yml down")
+                sh("/usr/bin/docker-compose -f docker-compose.test.yml down")
 
                 echo("Authenticating w/ private docker registry and pushing ${orgName}/${appName}:${commitId}")
                 sh("/usr/bin/docker login -u ${dockerHubUser} -p ${dockerHubPass}")
