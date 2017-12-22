@@ -39,14 +39,15 @@ def call() {
   def changeSet
 
   def appName = env.JOB_NAME
-  def orgName = 'phantasm66'              /* change to 'ezcater' eventually */
-  def kubernetesNamespace = 'sandbox'     /* change to whatever namespace we end up using (jenkins?) */
+  def orgName = 'phantasm66'
+  def kubernetesNamespace = 'sandbox'
+  def dockerComposeFile = 'docker-compose.test.yml'
 
   def localFiles = [
     'Dockerfile',
     'Jenkinsfile',
     'docker-entrypoint.sh',
-    'docker-compose.test.yml'
+     dockerComposeFile
   ]
 
   podTemplate(
@@ -108,10 +109,10 @@ def call() {
 
                 echo("Setting IMAGE_TAG .env file var for docker-compose file interpolation")
                 sh("echo 'IMAGE_TAG=${imageTag}' > .env")
-                sh("/usr/bin/docker-compose -f docker-compose.test.yml config")
+                sh("/usr/bin/docker-compose -f ${dockerComposeFile} config")
 
-                echo("Launching app and all dependencies locally using docker-compose.test.yml")
-                sh("/usr/bin/docker-compose -f docker-compose.test.yml up -d")
+                echo("Launching app and all dependencies locally using ${dockerComposeFile}")
+                sh("/usr/bin/docker-compose -f ${dockerComposeFile} up -d")
                 echo("Letting things percolate for a few before kicking off our tests")
                 sleep(30)
 
@@ -119,7 +120,7 @@ def call() {
                 /* NEED TO RESEARCH THE LOGISTICS OF *HOW* TO RUN THE RSPEC/ETC TESTS AGAINST THIS APP LOCALLY */
 
                 echo("Bringing down locally spawned app container set")
-                sh("/usr/bin/docker-compose -f docker-compose.test.yml down")
+                sh("/usr/bin/docker-compose -f ${dockerComposeFile} down")
 
                 echo("Authenticating w/ private docker registry and pushing ${orgName}/${appName}:${commitId}")
                 sh("/usr/bin/docker login -u ${dockerHubUser} -p ${dockerHubPass}")
