@@ -39,7 +39,7 @@ def call(String appName) {
           echo(changeSet.toString())
           echo(localFiles.toString())
 
-          localFiles.each { localFile ->
+          for (String localFile: localFiles) {
             if (changeSet.contains(localFile)) {
               echo("Build related file has changed: ${localFile} - running all image builder steps")
 
