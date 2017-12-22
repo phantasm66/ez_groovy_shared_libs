@@ -1,9 +1,8 @@
 def call() {
-  def orgName = 'phantasm66' /* change to 'ezcater' eventually */
-
   /*
-    LOAD THIS LIBRARY IMPLICITLY!
-    *****************************
+    **********************************
+    ** LOAD THIS LIBRARY IMPLICITLY **
+    **********************************
     This entire library is a pipeline for building, testing and deploying apps as
     containers in a kubernetes cluster (a few configuration lines in the Jenkins UI).
     This library must exist in a git repo under a main "vars/" directory. It will
@@ -22,8 +21,9 @@ def call() {
     limits, etc..) can be made below in the podTemplate or containerTemplate blocks
     (ref: https://jenkins.io/doc/pipeline/steps/kubernetes/)
 
-    Plugins you will need to install on the Jenkins master:
-    *******************************************************
+    ******************************************************
+    ** REQUIRED PLUGINS (install on the jenkins master) **
+    ******************************************************
       - kubernetes
           ~dynamically provisions Jenkins build slaves in a k8s cluster
 
@@ -35,10 +35,24 @@ def call() {
           ~jobs are named after the app's git repo
   */
 
+  def commitId
+  def changeSet
+
+  def appName = env.JOB_NAME
+  def orgName = 'phantasm66'              /* change to 'ezcater' eventually */
+  def kubernetesNamespace = 'sandbox'     /* change to whatever namespace we end up using (jenkins?) */
+
+  def localFiles = [
+    'Dockerfile',
+    'Jenkinsfile',
+    'docker-entrypoint.sh',
+    'docker-compose.test.yml'
+  ]
+
   podTemplate(
     name: 'jnlp',
     label: 'build-pod',
-    namespace: 'sandbox', /* change to whatever kube namespace we end up using (maybe 'jenkins'?) */
+    namespace: kubernetesNamespace,
     instanceCap: 5,
     idleMinutes: 5,
     nodeUsageMode: 'EXCLUSIVE',
@@ -68,17 +82,6 @@ def call() {
                          passwordVariable: 'dockerHubPass']]) {
 
         container('jnlp') {
-          def changeSet
-          def appName = env.JOB_NAME
-
-          String commitId
-
-          def localFiles = [
-            'Dockerfile',
-            'Jenkinsfile',
-            'docker-entrypoint.sh',
-            'docker-compose.test.yml'
-          ]
 
           stage('clone') {
             git(url: "https://github.com/${orgName}/${appName}.git")
