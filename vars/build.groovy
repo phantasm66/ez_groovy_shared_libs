@@ -1,4 +1,4 @@
-def call(String appName) {
+def call() {
 
   /*
     load this library implicitly
@@ -14,6 +14,7 @@ def call(String appName) {
       container('jnlp') {
         def commitId
         def changeSet
+        def appName = env.JOB_NAME
 
         def localFiles = [
           'Dockerfile',
@@ -34,8 +35,16 @@ def call(String appName) {
 
         stage('build') {
           def testFiles = findFiles(glob: '**/**/*.rb')
+
+          /* TEST THIS EACH LOOP WITH MULTIPLE TEST RB FILES */
           testFiles.each { testFile -> localFiles.add("tests/${testFile.name}") }
 
+          echo(localFiles.toString())
+
+
+
+
+          /* NEED A MORE RELIABLE WAY TO LOOP HERE */
           for (String localFile: localFiles) {
             if (changeSet.contains(localFile)) {
               echo("Build related file has changed: ${localFile} - running all image builder steps")
